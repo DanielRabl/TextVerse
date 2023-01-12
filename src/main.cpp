@@ -133,6 +133,7 @@ struct fields {
 			++it;
 		}
 		state.save(this->draw_order);
+		
 
 		qpl::write_data_file(state.get_finalized_string(), "data/session.dat");
 	}
