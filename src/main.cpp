@@ -25,6 +25,7 @@ struct field {
 
 		this->rect.set_color(this->rect_color);
 		this->rect.set_slope_dimension(30);
+		this->set_position({ 0, 0 });
 		this->first_update = true;
 	}
 	void set_position(qpl::vec2 position) {
@@ -85,7 +86,10 @@ struct field {
 	void load(qpl::save_state state) {
 		std::wstring text_string;
 		state.load(text_string);
-		state.load(this->hitbox.position);
+
+		qpl::vec2f position;
+		state.load(position);
+		this->set_position(position);
 
 		this->text_field.set_string(text_string);
 	}
@@ -108,15 +112,7 @@ struct fields {
 
 
 	void init() {
-
-		this->fields.resize(1u);
-		for (auto& i : this->fields) {
-			i.init();
-			i.set_position({ 200, 200 });
-		}
-		this->draw_order.push_back(0u);
-
-		//this->load();
+		this->load();
 	}
 
 	void save() {
@@ -132,12 +128,20 @@ struct fields {
 			order[i] = *it;
 			++it;
 		}
-		state.save(this->draw_order);
+		state.save(order);
 		
-
 		qpl::write_data_file(state.get_finalized_string(), "data/session.dat");
 	}
 	void load() {
+		if (!qpl::filesys::exists("data/session.dat")) {
+			this->fields.resize(1u);
+			for (auto& i : this->fields) {
+				i.init();
+				i.set_position({ 200, 200 });
+			}
+			this->draw_order.push_back(0u);
+			return;
+		}
 		auto data = qpl::filesys::read_file("data/session.dat");
 
 		qpl::save_state state;
@@ -146,13 +150,10 @@ struct fields {
 		qpl::size size;
 		state.load(size);
 
-		qpl::println("size = ", size);
-
 		this->fields.resize(size);
 		for (auto& i : this->fields) {
 			i.init();
 			state.load(i);
-			qpl::println("string = ", i.text_field.string());
 		}
 
 		std::vector<qpl::size> order;
@@ -160,10 +161,7 @@ struct fields {
 		this->draw_order.clear();
 		for (auto& i : order) {
 			this->draw_order.push_back(i);
-			qpl::println("push_back : ", i);
 		}
-
-		qpl::println("DRAW ORDER : ", this->draw_order);
 	}
 
 	bool hitbox_collides_with_field(qpl::hitbox hitbox) const {
