@@ -13,6 +13,8 @@ struct widgets {
 	bool any_text_field_focus = false;
 	bool turbo = false;
 
+	qpl::vec2 view_position;
+	qpl::vec2 view_scale;
 
 	void init() {
 		this->load();
@@ -31,35 +33,12 @@ struct widgets {
 			++it;
 		}
 		state.save(order);
+		state.save(this->view_position);
+		state.save(this->view_scale);
 
 		auto str = qpl::encrypted_keep_size(state.get_finalized_string(), crypto::key);
 		qpl::write_data_file(str, "data/session.dat");
 	}
-
-	widget get_default_widget() const {
-		widget widget;
-		widget.init();
-		widget.update_background();
-		auto hitbox = this->find_free_spot_for(widget.get_hitbox());
-		widget.set_position(hitbox.position);
-		return widget;
-	}
-	widget get_executable_script() const {
-		widget widget;
-		widget.init();
-		widget.set_widget_type(widget_type::executable_script);
-		widget.update_background();
-		auto hitbox = this->find_free_spot_for(widget.get_hitbox());
-		widget.set_position(hitbox.position);
-		return widget;
-	}
-
-	void load_default() {
-		this->widgets.resize(1u);
-		this->widgets[0u] = this->get_default_widget();
-		this->draw_order.push_back(0u);
-	}
-
 	void load() {
 		if (!qpl::filesys::exists("data/session.dat")) {
 			this->load_default();
@@ -97,6 +76,33 @@ struct widgets {
 		for (auto& i : order) {
 			this->draw_order.push_back(i);
 		}
+		state.load(this->view_position);
+		state.load(this->view_scale);
+	}
+
+
+	widget get_default_widget() const {
+		widget widget;
+		widget.init();
+		widget.update_background();
+		auto hitbox = this->find_free_spot_for(widget.get_hitbox());
+		widget.set_position(hitbox.position);
+		return widget;
+	}
+	widget get_executable_script() const {
+		widget widget;
+		widget.init();
+		widget.set_widget_type(widget_type::executable_script);
+		widget.update_background();
+		auto hitbox = this->find_free_spot_for(widget.get_hitbox());
+		widget.set_position(hitbox.position);
+		return widget;
+	}
+
+	void load_default() {
+		this->widgets.resize(1u);
+		this->widgets[0u] = this->get_default_widget();
+		this->draw_order.push_back(0u);
 	}
 
 	bool hitbox_collides_with_widget(qpl::hitbox hitbox) const {

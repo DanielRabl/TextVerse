@@ -71,13 +71,14 @@ struct widget {
 	}
 	void init() {
 		this->text.set_font("helvetica");
-		this->text.background_increase = { 20, 20 };
 		this->text.set_text_character_size(40);
+		this->text.background_increase = { 20, 20 };
 		this->text.background.set_outline_thickness(5.0f);
-		this->text.background.set_outline_color(qpl::rgb::grey_shade(0));
+		this->text.background.set_outline_color(qpl::rgb::black());
+		this->text.background.set_slope_dimension(config::widget_slope_dimension);
 
 		this->background.set_color(this->background_color);
-		this->background.set_slope_dimension(30);
+		this->background.set_slope_dimension(config::widget_background_slope_dimension);
 		this->set_position({ 0, 0 });
 		this->first_update = true;
 

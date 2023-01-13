@@ -4,8 +4,12 @@
 struct main_state : qsf::base_state {
 	void init() override {
 		this->clear_color = qpl::rgb::grey_shade(20);
+
 		this->widgets.init();
 		this->call_on_resize();
+
+		this->view.set_position(this->widgets.view_position);
+		this->view.set_scale(this->widgets.view_scale);
 	}
 	void call_on_resize() override {
 		this->view.set_hitbox(*this);
@@ -15,6 +19,16 @@ struct main_state : qsf::base_state {
 	}
 	void updating() override {
 		this->update(this->view);
+		if (this->view.just_changed()) {
+			this->widgets.view_position = this->view.position;
+			this->widgets.view_scale = this->view.scale;
+		}
+
+		if (this->event().key_holding(sf::Keyboard::LControl) && this->event().key_pressed(sf::Keyboard::R)) {
+			this->view.reset();
+			this->view.set_hitbox(*this);
+		}
+
 		this->update(this->widgets, this->view);
 
 		this->view.allow_dragging = this->widgets.allow_view_drag;
