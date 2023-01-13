@@ -1,20 +1,20 @@
 #pragma once
 #include <qpl/qpl.hpp>
-#include "script_field.hpp"
+#include "executable_script.hpp"
 
-enum class field_type {
+enum class widget_type {
 	text,
-	execute_script,
+	executable_script,
 };
 
-struct field {
+struct widget {
 	qsf::text_field text;
 	qsf::smooth_rectangle background;
 	qpl::hitbox dragging_hitbox;
 	qpl::hitbox hitbox;
-	field_type type = field_type::text;
+	widget_type type = widget_type::text;
 
-	std::unique_ptr<script_field> script_field;
+	std::unique_ptr<executable_script> executable_script;
 
 	bool first_update = true;
 	bool hovering = false;
@@ -27,13 +27,13 @@ struct field {
 		return this->hitbox;
 	}
 
-	field() {
+	widget() {
 
 	}
-	field(const field& other) {
+	widget(const widget& other) {
 		*this = other;
 	}
-	field& operator=(const field& other) {
+	widget& operator=(const widget& other) {
 		this->text = other.text;
 		this->background = other.background;
 		this->dragging_hitbox = other.dragging_hitbox;
@@ -44,8 +44,8 @@ struct field {
 		this->dragging = false;
 		this->just_selected = false;
 
-		if (other.script_field) {
-			this->script_field = std::make_unique<::script_field>(*other.script_field);
+		if (other.executable_script) {
+			this->executable_script = std::make_unique<::executable_script>(*other.executable_script);
 		}
 		return *this;
 	}
@@ -64,7 +64,7 @@ struct field {
 
 		state.load(this->type);
 
-		this->set_field_type(this->type);
+		this->set_widget_type(this->type);
 		this->set_position(position);
 		this->text.set_string(text_string);
 		return true;
@@ -81,17 +81,16 @@ struct field {
 		this->set_position({ 0, 0 });
 		this->first_update = true;
 
-		this->type = field_type::text;
-		this->script_field.reset();
+		this->type = widget_type::text;
+		this->executable_script.reset();
 	}
 
-	void set_field_type(::field_type type) {
+	void set_widget_type(::widget_type type) {
 		this->type = type;
 
-		if (this->type == field_type::execute_script) {
-			this->script_field = std::make_unique<::script_field>();
-			this->script_field->set_background_color(this->background_color);
-
+		if (this->type == widget_type::executable_script) {
+			this->executable_script = std::make_unique<::executable_script>();
+			this->executable_script->set_background_color(this->background_color);
 
 			this->text.set_font("consola");
 		}
@@ -107,8 +106,8 @@ struct field {
 		this->dragging_hitbox.move(delta);
 		this->hitbox.move(delta);
 
-		if (this->script_field) {
-			this->script_field->move(delta);
+		if (this->executable_script) {
+			this->executable_script->move(delta);
 		}
 	}
 	void update_background() {
@@ -119,14 +118,14 @@ struct field {
 
 		this->dragging_hitbox = this->hitbox;
 		this->dragging_hitbox.set_height(50);
-		if (this->script_field) {
-			this->script_field->update_position(this->hitbox);
+		if (this->executable_script) {
+			this->executable_script->update_position(this->hitbox);
 		}
 	}
 	void set_background_color(qpl::rgb color) {
 		this->background.set_color(color);
-		if (this->script_field) {
-			this->script_field->set_background_color(color);
+		if (this->executable_script) {
+			this->executable_script->set_background_color(color);
 		}
 	}
 	void update(const qsf::event_info& event, bool other_selected) {
@@ -158,15 +157,15 @@ struct field {
 			this->move(delta);
 		}
 
-		if (this->script_field) {
-			event.update(*this->script_field);
+		if (this->executable_script) {
+			event.update(*this->executable_script);
 		}
 
 		this->first_update = false;
 	}
 	void draw(qsf::draw_object& draw) const {
-		if (this->script_field) {
-			draw.draw(*this->script_field);
+		if (this->executable_script) {
+			draw.draw(*this->executable_script);
 		}
 		draw.draw(this->background);
 		draw.draw(this->text);

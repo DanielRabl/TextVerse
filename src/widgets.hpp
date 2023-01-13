@@ -1,10 +1,10 @@
 #pragma once
 #include <qpl/qpl.hpp>
-#include "field.hpp"
+#include "widget.hpp"
 #include "crypto.hpp"
 
-struct fields {
-	std::vector<field> fields;
+struct widgets {
+	std::vector<widget> widgets;
 	std::list<qpl::size> draw_order;
 
 	qpl::size selected_index = qpl::size_max;
@@ -22,11 +22,11 @@ struct fields {
 		qpl::save_state state;
 
 		state.save(crypto::check);
-		state.save(this->fields);
+		state.save(this->widgets);
 
-		std::vector<qpl::size> order(this->fields.size());
+		std::vector<qpl::size> order(this->widgets.size());
 		auto it = this->draw_order.begin();
-		for (qpl::size i = 0u; i < this->fields.size(); ++i) {
+		for (qpl::size i = 0u; i < this->widgets.size(); ++i) {
 			order[i] = *it;
 			++it;
 		}
@@ -36,27 +36,27 @@ struct fields {
 		qpl::write_data_file(str, "data/session.dat");
 	}
 
-	field get_default_field() const {
-		field field;
-		field.init();
-		field.update_background();
-		auto hitbox = this->find_free_spot_for(field.get_hitbox());
-		field.set_position(hitbox.position);
-		return field;
+	widget get_default_widget() const {
+		widget widget;
+		widget.init();
+		widget.update_background();
+		auto hitbox = this->find_free_spot_for(widget.get_hitbox());
+		widget.set_position(hitbox.position);
+		return widget;
 	}
-	field get_script_field() const {
-		field field;
-		field.init();
-		field.set_field_type(field_type::execute_script);
-		field.update_background();
-		auto hitbox = this->find_free_spot_for(field.get_hitbox());
-		field.set_position(hitbox.position);
-		return field;
+	widget get_executable_script() const {
+		widget widget;
+		widget.init();
+		widget.set_widget_type(widget_type::executable_script);
+		widget.update_background();
+		auto hitbox = this->find_free_spot_for(widget.get_hitbox());
+		widget.set_position(hitbox.position);
+		return widget;
 	}
 
 	void load_default() {
-		this->fields.resize(1u);
-		this->fields[0u] = this->get_default_field();
+		this->widgets.resize(1u);
+		this->widgets[0u] = this->get_default_widget();
 		this->draw_order.push_back(0u);
 	}
 
@@ -85,8 +85,8 @@ struct fields {
 		qpl::size size;
 		state.load(size);
 
-		this->fields.resize(size);
-		for (auto& i : this->fields) {
+		this->widgets.resize(size);
+		for (auto& i : this->widgets) {
 			i.init();
 			state.load(i);
 		}
@@ -99,8 +99,8 @@ struct fields {
 		}
 	}
 
-	bool hitbox_collides_with_field(qpl::hitbox hitbox) const {
-		for (auto& i : this->fields) {
+	bool hitbox_collides_with_widget(qpl::hitbox hitbox) const {
+		for (auto& i : this->widgets) {
 			if (hitbox.collides(i.get_hitbox())) {
 				return true;
 			}
@@ -110,10 +110,10 @@ struct fields {
 
 	qpl::hitbox find_free_spot_for(qpl::hitbox hitbox) const {
 
-		std::vector<std::pair<qpl::size, qpl::f64>> distances(this->fields.size());
-		for (qpl::size i = 0u; i < this->fields.size(); ++i) {
+		std::vector<std::pair<qpl::size, qpl::f64>> distances(this->widgets.size());
+		for (qpl::size i = 0u; i < this->widgets.size(); ++i) {
 			distances[i].first = i;
-			distances[i].second = (hitbox.get_center() - this->fields[i].get_hitbox().get_center()).length();
+			distances[i].second = (hitbox.get_center() - this->widgets[i].get_hitbox().get_center()).length();
 		}
 		qpl::sort(distances, [](auto a, auto b) {
 			return a.second < b.second;
@@ -125,37 +125,37 @@ struct fields {
 			sides[i] = i;
 		}
 
-		for (auto& field : distances) {
-			auto field_hitbox = this->fields[field.first].get_hitbox();
+		for (auto& widget : distances) {
+			auto widget_hitbox = this->widgets[widget.first].get_hitbox();
 			qpl::shuffle(sides);
 
 			for (const auto& i : sides) {
-				auto pos = field_hitbox.get_side_corner_left((i + 2) % 4);
+				auto pos = widget_hitbox.get_side_corner_left((i + 2) % 4);
 				pos += qpl::vec_cross4[(i + 1) % 4] * 10;
 
 				hitbox.set_side_corner_left(i, pos);
-				if (!this->hitbox_collides_with_field(hitbox)) {
+				if (!this->hitbox_collides_with_widget(hitbox)) {
 					return hitbox;
 				}
 			}
 		}
-		throw qpl::exception("fields::find_free_spot_for(", hitbox.string(), ") : no spot found. this shouldn't be possible!");
+		throw qpl::exception("widgets::find_free_spot_for(", hitbox.string(), ") : no spot found. this shouldn't be possible!");
 		return {};
 	}
 
 	void paste(qpl::vec2f position) {
 		if (this->copy_index != qpl::size_max) {
-			auto hitbox = this->fields[this->copy_index].get_hitbox();
+			auto hitbox = this->widgets[this->copy_index].get_hitbox();
 			hitbox.set_center(position);
 
-			if (this->hitbox_collides_with_field(hitbox)) {
+			if (this->hitbox_collides_with_widget(hitbox)) {
 				hitbox = this->find_free_spot_for(hitbox);
 			}
 
-			this->fields.push_back(this->fields[this->copy_index]);
-			this->fields.back().set_position(hitbox.position);
-			this->fields.back().update_background();
-			this->draw_order.push_back(this->fields.size() - 1);
+			this->widgets.push_back(this->widgets[this->copy_index]);
+			this->widgets.back().set_position(hitbox.position);
+			this->widgets.back().update_background();
+			this->draw_order.push_back(this->widgets.size() - 1);
 		}
 	}
 
@@ -176,7 +176,7 @@ struct fields {
 					if (this->selected_index != qpl::size_max) {
 						auto before = this->copy_index;
 						this->copy_index = this->selected_index;
-						this->paste(this->fields[this->selected_index].get_hitbox().get_center());
+						this->paste(this->widgets[this->selected_index].get_hitbox().get_center());
 						this->copy_index = before;
 					}
 				}
@@ -189,16 +189,16 @@ struct fields {
 			if (del) {
 				if (this->selected_index != qpl::size_max) {
 					this->draw_order.erase(std::ranges::find(this->draw_order, this->selected_index));
-					if (this->selected_index != this->fields.size() - 1) {
-						std::swap(this->fields[this->selected_index], this->fields.back());
+					if (this->selected_index != this->widgets.size() - 1) {
+						std::swap(this->widgets[this->selected_index], this->widgets.back());
 						for (auto& i : this->draw_order) {
 							if (i >= this->selected_index) {
 								--i;
 							}
 						}
 					}
-					if (this->fields.size()) {
-						this->fields.pop_back();
+					if (this->widgets.size()) {
+						this->widgets.pop_back();
 					}
 					this->selected_index = qpl::size_max;
 				}
@@ -221,13 +221,13 @@ struct fields {
 		for (auto it = this->draw_order.crbegin(); it != this->draw_order.crend(); ++it) {
 			auto index = *it;
 
-			event.update(this->fields[index], other_selected);
-			if (this->fields[index].just_selected) {
+			event.update(this->widgets[index], other_selected);
+			if (this->widgets[index].just_selected) {
 				this->selected_index = index;
 				just_selected_index = index;
 				other_selected = true;
 			}
-			if (this->fields[index].text.has_focus()) {
+			if (this->widgets[index].text.has_focus()) {
 				any_text_field_focus = true;
 			}
 		}
@@ -240,7 +240,7 @@ struct fields {
 
 		bool one_hovering = false;
 		this->allow_view_drag = true;
-		for (auto& i : this->fields) {
+		for (auto& i : this->widgets) {
 			if (i.text.has_focus() || i.dragging) {
 				this->allow_view_drag = false;
 			}
@@ -259,7 +259,7 @@ struct fields {
 
 	void draw(qsf::draw_object& draw) const {
 		for (auto& i : this->draw_order) {
-			draw.draw(this->fields[i]);
+			draw.draw(this->widgets[i]);
 		}
 	}
 };

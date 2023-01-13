@@ -1,27 +1,30 @@
 #include <qpl/qpl.hpp>
-#include "fields.hpp"
+#include "widgets.hpp"
 
 struct main_state : qsf::base_state {
 	void init() override {
 		this->clear_color = qpl::rgb::grey_shade(20);
-		this->fields.init();
+		this->widgets.init();
 		this->call_on_resize();
 	}
 	void call_on_resize() override {
 		this->view.set_hitbox(*this);
 	}
+	void call_on_close() override {
+		this->widgets.save();
+	}
 	void updating() override {
 		this->update(this->view);
-		this->update(this->fields, this->view);
+		this->update(this->widgets, this->view);
 
-		this->view.allow_dragging = this->fields.allow_view_drag;
+		this->view.allow_dragging = this->widgets.allow_view_drag;
 	}
 	void drawing() override {
-		this->draw(this->fields, this->view);
+		this->draw(this->widgets, this->view);
 	}
 	qsf::view_rectangle view;
 	qpl::size side = 0u;
-	fields fields;
+	widgets widgets;
 };
 
 int main() try {

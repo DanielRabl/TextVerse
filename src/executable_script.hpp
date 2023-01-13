@@ -2,14 +2,14 @@
 #include <qpl/qpl.hpp>
 
 
-struct script_field {
+struct executable_script {
 	qsf::smooth_rectangle background;
 	qsf::smooth_rectangle checkmark_box;
 	qsf::smooth_corner corner;
 	qsf::vertex_array checkmark;
 	qpl::hitbox hitbox;
 
-	script_field() {
+	executable_script() {
 		this->hitbox.set_dimension({ 120, 120 });
 		this->hitbox.set_center({ 0, 0 });
 
