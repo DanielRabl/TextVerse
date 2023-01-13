@@ -93,7 +93,6 @@ struct field {
 			this->script_field->set_background_color(this->background_color);
 
 
-			this->text.set_background_color(qpl::rgb(50, 50, 100));
 			this->text.set_font("consola");
 		}
 	}

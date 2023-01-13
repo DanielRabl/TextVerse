@@ -10,13 +10,14 @@ struct script_field {
 	qpl::hitbox hitbox;
 
 	script_field() {
-		this->hitbox.set_dimension({ 110, 110 });
+		this->hitbox.set_dimension({ 120, 120 });
 		this->hitbox.set_center({ 0, 0 });
 
-		this->background.set_hitbox(this->hitbox.extended_up(50));
-		this->background.set_slope_dimension(30);
+		this->background.set_hitbox(this->hitbox.extended_up(70));
+		this->background.set_slope_dimension(40);
 
-		this->checkmark_box.set_hitbox(this->hitbox.decreased(10));
+		this->checkmark_box.set_dimension({ 100, 100 });
+		this->checkmark_box.set_center(this->hitbox.get_center());
 		this->checkmark_box.set_slope_dimension(35);
 		this->checkmark_box.set_color(qpl::rgb::grey_shade(40));
 
@@ -31,8 +32,9 @@ struct script_field {
 			i.position += qpl::vec(5, 0);
 		}
 
-		this->corner.set_dimension({ 50, 50 });
+		this->corner.set_dimension({ 40, 40 });
 		this->corner.set_position({ 300, 300 });
+		this->corner.set_slope_point_count(40);
 		this->corner.invert();
 		this->corner.set_rotation(qpl::pi);
 
