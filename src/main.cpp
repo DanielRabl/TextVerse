@@ -10,6 +10,8 @@ struct main_state : qsf::base_state {
 
 		this->view.set_position(this->widgets.view_position);
 		this->view.set_scale(this->widgets.view_scale);
+
+		this->color_picker.set_font("helvetica");
 	}
 	void call_on_resize() override {
 		this->view.set_hitbox(*this);
@@ -29,6 +31,9 @@ struct main_state : qsf::base_state {
 		if (this->event().key_holding(sf::Keyboard::LControl) && this->event().key_pressed(sf::Keyboard::R)) {
 			this->view.reset();
 			this->view.set_hitbox(*this);
+		}
+		if (this->color_picker.color_value_changed()) {
+			qpl::println(this->color_picker.get_color_value());
 		}
 
 		this->update(this->widgets, this->view);
