@@ -17,8 +17,10 @@ struct main_state : qsf::base_state {
 	void call_on_close() override {
 		this->widgets.save();
 	}
+
 	void updating() override {
 		this->update(this->view);
+		this->update(this->color_picker, this->view);
 		if (this->view.just_changed()) {
 			this->widgets.view_position = this->view.position;
 			this->widgets.view_scale = this->view.scale;
@@ -32,13 +34,20 @@ struct main_state : qsf::base_state {
 		this->update(this->widgets, this->view);
 
 		this->view.allow_dragging = this->widgets.allow_view_drag;
+		if (this->color_picker.is_dragging()) {
+			this->view.allow_dragging = false;
+		}
 	}
+
 	void drawing() override {
 		this->draw(this->widgets, this->view);
+		this->draw(this->color_picker, this->view);
 	}
 	qsf::view_rectangle view;
 	qpl::size side = 0u;
 	widgets widgets;
+
+	qsf::color_picker color_picker;
 };
 
 int main() try {

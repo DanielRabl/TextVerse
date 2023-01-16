@@ -76,6 +76,7 @@ struct widget {
 		this->text.background.set_outline_thickness(5.0f);
 		this->text.background.set_outline_color(qpl::rgb::black());
 		this->text.background.set_slope_dimension(config::widget_slope_dimension);
+		this->text.set_position({ 40, 70 });
 
 		this->background.set_color(this->background_color);
 		this->background.set_slope_dimension(config::widget_background_slope_dimension);
