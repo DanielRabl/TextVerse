@@ -12,6 +12,8 @@ struct main_state : qsf::base_state {
 		this->view.set_scale(this->widgets.view_scale);
 
 		this->color_picker.set_font("helvetica");
+		this->color_picker.set_view_position({ 300, 0 });
+		this->color_picker.set_view_scale({ 1, 1 });
 	}
 	void call_on_resize() override {
 		this->view.set_hitbox(*this);
@@ -35,8 +37,6 @@ struct main_state : qsf::base_state {
 			this->color_picker.set_color_value(this->color_picker.get_color_value());
 		}
 
-		constexpr qpl::rgba a(1, 2, 3);
-
 		this->update(this->widgets, this->view);
 
 		this->view.allow_dragging = this->widgets.allow_view_drag && !this->color_picker.has_focus();
@@ -51,7 +51,7 @@ struct main_state : qsf::base_state {
 	qpl::size side = 0u;
 	widgets widgets;
 
-	qsf::color_picker color_picker;
+	qsf::view_extension<qsf::color_picker> color_picker;
 };
 
 int main() try {
