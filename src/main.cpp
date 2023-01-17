@@ -21,7 +21,6 @@ struct main_state : qsf::base_state {
 	}
 
 	void updating() override {
-		this->update(this->view);
 		this->update(this->color_picker, this->view);
 		if (this->view.just_changed()) {
 			this->widgets.view_position = this->view.position;
@@ -32,16 +31,16 @@ struct main_state : qsf::base_state {
 			this->view.reset();
 			this->view.set_hitbox(*this);
 		}
-		if (this->color_picker.color_value_changed()) {
-			qpl::println(this->color_picker.get_color_value());
+		if (this->event().key_holding(sf::Keyboard::Space)) {
+			this->color_picker.set_color_value(this->color_picker.get_color_value());
 		}
+
+		constexpr qpl::rgba a(1, 2, 3);
 
 		this->update(this->widgets, this->view);
 
-		this->view.allow_dragging = this->widgets.allow_view_drag;
-		if (this->color_picker.is_dragging()) {
-			this->view.allow_dragging = false;
-		}
+		this->view.allow_dragging = this->widgets.allow_view_drag && !this->color_picker.has_focus();
+		this->update(this->view);
 	}
 
 	void drawing() override {
@@ -57,7 +56,7 @@ struct main_state : qsf::base_state {
 
 int main() try {
 	qsf::framework framework;
-	framework.set_antialiasing_level(2);
+	framework.set_antialiasing_level(1);
 	framework.set_title("QPL");
 	framework.add_font("helvetica", "resources/Helvetica.ttf");
 	framework.add_font("consola", "resources/consola.ttf");
