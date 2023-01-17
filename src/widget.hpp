@@ -99,15 +99,18 @@ struct widget {
 	}
 
 	void set_position(qpl::vec2 position) {
+		//auto delta = position - this->get_view_position();
 		auto delta = position - this->hitbox.position;
 		this->move(delta);
 	}
 	void move(qpl::vec2 delta) {
+		//qpl::println("move : ", delta);
+		//this->move_view_hitbox(delta);
 		this->text.move(delta);
 		this->background.move(delta);
 		this->dragging_hitbox.move(delta);
 		this->hitbox.move(delta);
-
+		
 		if (this->executable_script) {
 			this->executable_script->move(delta);
 		}

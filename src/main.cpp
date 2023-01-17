@@ -12,8 +12,8 @@ struct main_state : qsf::base_state {
 		this->view.set_scale(this->widgets.view_scale);
 
 		this->color_picker.set_font("helvetica");
-		this->color_picker.set_view_position({ 300, 0 });
-		this->color_picker.set_view_scale({ 1, 1 });
+		this->color_picker.set_view_position({ 10, 0 });
+		this->color_picker.set_view_scale({ 2, 2 });
 	}
 	void call_on_resize() override {
 		this->view.set_hitbox(*this);
@@ -47,7 +47,7 @@ struct main_state : qsf::base_state {
 		this->draw(this->widgets, this->view);
 		this->draw(this->color_picker, this->view);
 	}
-	qsf::view_rectangle view;
+	qsf::view_control view;
 	qpl::size side = 0u;
 	widgets widgets;
 
