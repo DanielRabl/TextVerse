@@ -266,6 +266,11 @@ struct widgets {
 	void draw(qsf::draw_object& draw) const {
 		for (auto& i : this->draw_order) {
 			draw.draw(this->widgets[i]);
+
+			qsf::rectangle rect;
+			rect.set_color(qpl::rgb::red().with_alpha(50));
+			rect.set_hitbox(this->widgets[i].get_hitbox());
+			draw.draw(rect);
 		}
 	}
 };

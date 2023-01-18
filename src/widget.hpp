@@ -25,7 +25,8 @@ struct widget {
 	constexpr static qpl::rgb background_color = qpl::rgb::grey_shade(100);
 
 	qpl::hitbox get_hitbox() const {
-		return this->hitbox;
+		//return this->hitbox;
+		return this->view.transform_hitbox(this->hitbox);
 	}
 
 	widget() {
@@ -41,6 +42,7 @@ struct widget {
 		this->hitbox = other.hitbox;
 		this->type = other.type;
 		this->first_update = other.first_update;
+		this->view = other.view;
 		this->hovering = false;
 		this->dragging = false;
 		this->just_selected = false;
@@ -53,20 +55,20 @@ struct widget {
 
 	void save(qpl::save_state& state) const {
 		state.save(this->text.wstring());
-		state.save(this->hitbox.position);
+		state.save(this->view.position);
+		state.save(this->view.scale);
 		state.save(this->type);
 	}
 	bool load(qpl::save_state state) {
 		std::wstring text_string;
 		state.load(text_string);
 
-		qpl::vec2f position;
-		state.load(position);
+		state.load(this->view.position);
+		state.load(this->view.scale);
 
 		state.load(this->type);
 
 		this->set_widget_type(this->type);
-		this->set_position(position);
 		this->text.set_string(text_string);
 		return true;
 	}
@@ -87,7 +89,7 @@ struct widget {
 		this->type = widget_type::text;
 		this->executable_script.reset();
 
-		this->view.scale = { 2, 2 };
+		this->view.scale = { 1, 1 };
 	}
 
 	void set_widget_type(::widget_type type) {
@@ -103,20 +105,10 @@ struct widget {
 
 	void set_position(qpl::vec2 position) {
 		auto delta = position - this->view.position;
-		//auto delta = position - this->hitbox.position;
 		this->move(delta);
 	}
 	void move(qpl::vec2 delta) {
-		qpl::println("move : ", delta);
 		this->view.move(delta);
-		//this->text.move(delta);
-		//this->background.move(delta);
-		//this->dragging_hitbox.move(delta);
-		//this->hitbox.move(delta);
-		//
-		//if (this->executable_script) {
-		//	this->executable_script->move(delta);
-		//}
 	}
 	void update_background() {
 		this->hitbox = this->text.get_background_hitbox().increased(20);
