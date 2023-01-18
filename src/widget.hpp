@@ -25,7 +25,6 @@ struct widget {
 	constexpr static qpl::rgb background_color = qpl::rgb::grey_shade(100);
 
 	qpl::hitbox get_hitbox() const {
-		//return this->hitbox;
 		return this->view.transform_hitbox(this->hitbox);
 	}
 
@@ -88,8 +87,6 @@ struct widget {
 
 		this->type = widget_type::text;
 		this->executable_script.reset();
-
-		this->view.scale = { 1, 1 };
 	}
 
 	void set_widget_type(::widget_type type) {

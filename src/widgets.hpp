@@ -99,6 +99,11 @@ struct widgets {
 		return widget;
 	}
 
+	void add(widget&& widget) {
+		this->widgets.emplace_back(std::move(widget));
+		this->draw_order.push_back(this->widgets.size() - 1);
+	}
+
 	void load_default() {
 		this->widgets.resize(1u);
 		this->widgets[0u] = this->get_default_widget();
@@ -266,11 +271,6 @@ struct widgets {
 	void draw(qsf::draw_object& draw) const {
 		for (auto& i : this->draw_order) {
 			draw.draw(this->widgets[i]);
-
-			qsf::rectangle rect;
-			rect.set_color(qpl::rgb::red().with_alpha(50));
-			rect.set_hitbox(this->widgets[i].get_hitbox());
-			draw.draw(rect);
 		}
 	}
 };
