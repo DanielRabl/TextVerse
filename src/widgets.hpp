@@ -4,6 +4,7 @@
 #include "crypto.hpp"
 
 struct widgets {
+	qsf::view view;
 	std::vector<widget> widgets;
 	std::list<qpl::size> draw_order;
 

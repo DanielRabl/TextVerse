@@ -6,11 +6,6 @@ struct main_state : qsf::base_state {
 		this->clear_color = qpl::rgb::grey_shade(20);
 
 		this->load();
-		//this->widgets.init();
-
-		//this->view.scale = this->widgets.view_scale;
-		//this->view.position = this->widgets.view_position;
-
 		this->call_on_resize();
 
 		this->color_picker.set_font("helvetica");
