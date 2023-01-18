@@ -8,6 +8,7 @@ enum class widget_type {
 };
 
 struct widget {
+	qsf::view view;
 	qsf::text_field text;
 	qsf::smooth_rectangle background;
 	qpl::hitbox dragging_hitbox;
@@ -85,6 +86,8 @@ struct widget {
 
 		this->type = widget_type::text;
 		this->executable_script.reset();
+
+		this->view.scale = { 2, 2 };
 	}
 
 	void set_widget_type(::widget_type type) {
@@ -99,21 +102,21 @@ struct widget {
 	}
 
 	void set_position(qpl::vec2 position) {
-		//auto delta = position - this->get_view_position();
-		auto delta = position - this->hitbox.position;
+		auto delta = position - this->view.position;
+		//auto delta = position - this->hitbox.position;
 		this->move(delta);
 	}
 	void move(qpl::vec2 delta) {
-		//qpl::println("move : ", delta);
-		//this->move_view_hitbox(delta);
-		this->text.move(delta);
-		this->background.move(delta);
-		this->dragging_hitbox.move(delta);
-		this->hitbox.move(delta);
-		
-		if (this->executable_script) {
-			this->executable_script->move(delta);
-		}
+		qpl::println("move : ", delta);
+		this->view.move(delta);
+		//this->text.move(delta);
+		//this->background.move(delta);
+		//this->dragging_hitbox.move(delta);
+		//this->hitbox.move(delta);
+		//
+		//if (this->executable_script) {
+		//	this->executable_script->move(delta);
+		//}
 	}
 	void update_background() {
 		this->hitbox = this->text.get_background_hitbox().increased(20);

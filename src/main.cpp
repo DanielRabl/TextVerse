@@ -12,8 +12,8 @@ struct main_state : qsf::base_state {
 		this->view.set_scale(this->widgets.view_scale);
 
 		this->color_picker.set_font("helvetica");
-		this->color_picker.set_view_position({ 10, 0 });
-		this->color_picker.set_view_scale({ 2, 2 });
+		this->color_picker.view.set_position({ 200, 0 });
+		this->color_picker.view.set_scale({ 1.5, 1.5 });
 	}
 	void call_on_resize() override {
 		this->view.set_hitbox(*this);
@@ -23,7 +23,7 @@ struct main_state : qsf::base_state {
 	}
 
 	void updating() override {
-		this->update(this->color_picker, this->view);
+		//this->update(this->color_picker, this->view);
 		if (this->view.just_changed()) {
 			this->widgets.view_position = this->view.position;
 			this->widgets.view_scale = this->view.scale;
@@ -38,14 +38,14 @@ struct main_state : qsf::base_state {
 		}
 
 		this->update(this->widgets, this->view);
-
-		this->view.allow_dragging = this->widgets.allow_view_drag && !this->color_picker.has_focus();
+		//this->view.allow_dragging = this->widgets.allow_view_drag && !this->color_picker.has_focus();
+		this->view.allow_dragging = this->widgets.allow_view_drag;
 		this->update(this->view);
 	}
 
 	void drawing() override {
 		this->draw(this->widgets, this->view);
-		this->draw(this->color_picker, this->view);
+		//this->draw(this->color_picker, this->view);
 	}
 	qsf::view_control view;
 	qpl::size side = 0u;
