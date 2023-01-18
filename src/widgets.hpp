@@ -13,19 +13,9 @@ struct widgets {
 	bool any_text_field_focus = false;
 	bool turbo = false;
 
-	qpl::vec2 view_position;
-	qpl::vec2 view_scale;
-
-	void init() {
-		this->load();
-	}
-
-	void save() {
-		qpl::save_state state;
-
-		state.save(crypto::check);
+	void save(qpl::save_state& state) const {
 		state.save(this->widgets);
-
+	
 		std::vector<qpl::size> order(this->widgets.size());
 		auto it = this->draw_order.begin();
 		for (qpl::size i = 0u; i < this->widgets.size(); ++i) {
@@ -33,42 +23,9 @@ struct widgets {
 			++it;
 		}
 		state.save(order);
-		state.save(this->view_position);
-		state.save(this->view_scale);
-
-		auto str = qpl::encrypted_keep_size(state.get_finalized_string(), crypto::key);
-		qpl::write_data_file(str, "data/session.dat");
 	}
-	void load() {
-		if (!qpl::filesys::exists("data/session.dat")) {
-			this->load_default();
-			return;
-		}
-
-		auto data = qpl::filesys::read_file("data/session.dat");
-		qpl::decrypt_keep_size(data, crypto::key);
-
-		std::array<qpl::u64, 4u> confirm;
-
-		qpl::save_state state;
-		state.set_string(data);
-
-		state.load(confirm);
-
-		if (confirm != crypto::check) {
-			qpl::println("couldn't load session!");
-			this->load_default();
-			return;
-		}
-
-		qpl::size size;
-		state.load(size);
-
-		this->widgets.resize(size);
-		for (auto& i : this->widgets) {
-			i.init();
-			state.load(i);
-		}
+	void load(qpl::load_state& state) {
+		state.load(this->widgets);
 
 		std::vector<qpl::size> order;
 		state.load(order);
@@ -76,10 +33,7 @@ struct widgets {
 		for (auto& i : order) {
 			this->draw_order.push_back(i);
 		}
-		state.load(this->view_position);
-		state.load(this->view_scale);
 	}
-
 
 	widget get_default_widget() const {
 		widget widget;
@@ -213,14 +167,6 @@ struct widgets {
 					}
 					this->selected_index = qpl::size_max;
 				}
-			}
-		}
-		if (event.key_holding(sf::Keyboard::LControl)) {
-			if (event.key_single_pressed(sf::Keyboard::S)) {
-				this->save();
-			}
-			if (event.key_single_pressed(sf::Keyboard::L)) {
-				this->load();
 			}
 		}
 	}

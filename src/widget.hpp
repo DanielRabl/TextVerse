@@ -49,6 +49,9 @@ struct widget {
 		if (other.executable_script) {
 			this->executable_script = std::make_unique<::executable_script>(*other.executable_script);
 		}
+		else {
+			this->executable_script.reset();
+		}
 		return *this;
 	}
 
@@ -58,7 +61,9 @@ struct widget {
 		state.save(this->view.scale);
 		state.save(this->type);
 	}
-	bool load(qpl::save_state state) {
+	bool load(qpl::load_state& state) {
+		this->init();
+
 		std::wstring text_string;
 		state.load(text_string);
 

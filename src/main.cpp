@@ -5,11 +5,13 @@ struct main_state : qsf::base_state {
 	void init() override {
 		this->clear_color = qpl::rgb::grey_shade(20);
 
-		this->widgets.init();
-		this->call_on_resize();
+		this->load();
+		//this->widgets.init();
 
-		this->view.set_position(this->widgets.view_position);
-		this->view.set_scale(this->widgets.view_scale);
+		//this->view.scale = this->widgets.view_scale;
+		//this->view.position = this->widgets.view_position;
+
+		this->call_on_resize();
 
 		this->color_picker.set_font("helvetica");
 		this->color_picker.view.set_position({ 200, 0 });
@@ -19,21 +21,47 @@ struct main_state : qsf::base_state {
 	}
 	void call_on_close() override {
 		if (this->save_on_close) {
-			this->widgets.save();
+			this->save();
+		}
+	}
+
+	void save() {
+		qpl::save_state state;
+		state.save(this->widgets, this->view.position, this->view.scale, crypto::check);
+	
+		auto str = qpl::encrypted_keep_size(state.get_finalized_string(), crypto::key);
+		qpl::write_data_file(str, "data/session.dat");
+	}
+	void load() {
+		auto data = qpl::filesys::read_file("data/session.dat");
+		qpl::decrypt_keep_size(data, crypto::key);
+	
+		std::array<qpl::u64, 4u> confirm;
+		qpl::load_state state;
+		state.set_string(data);
+		state.load(this->widgets, this->view.position, this->view.scale, confirm);
+	
+		if (confirm != crypto::check) {
+			qpl::println("couldn't load session!");
+			this->widgets.load_default();
+			return;
 		}
 	}
 
 	void updating() override {
 		this->update(this->color_picker, this->view);
 
-		if (this->view.just_changed()) {
-			this->widgets.view_position = this->view.position;
-			this->widgets.view_scale = this->view.scale;
-		}
-
-		if (this->event().key_holding(sf::Keyboard::LControl) && this->event().key_pressed(sf::Keyboard::R)) {
-			this->view.reset();
-			this->view.set_hitbox(*this);
+		if (this->event().key_holding(sf::Keyboard::LControl)) {
+			if (this->event().key_pressed(sf::Keyboard::R)) {
+				this->view.reset();
+					this->view.set_hitbox(*this);
+			}
+			else if (this->event().key_single_pressed(sf::Keyboard::S)) {
+				this->save();
+			}
+			else if (this->event().key_single_pressed(sf::Keyboard::L)) {
+				this->load();
+			}
 		}
 		if (this->event().key_holding(sf::Keyboard::Space)) {
 			this->color_picker.set_color_value(this->color_picker.get_color_value());
