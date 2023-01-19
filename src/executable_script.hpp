@@ -55,6 +55,7 @@ struct executable_script {
 		this->corner.set_color(color);
 	}
 	void move(qpl::vec2 delta) {
+		qpl::println("move : ", delta);
 		this->background.move(delta);
 		this->checkmark.move(delta);
 		this->checkmark_box.move(delta);
