@@ -80,6 +80,7 @@ struct main_state : qsf::base_state {
 };
 
 int main() try {
+
 	qsf::framework framework;
 	framework.set_antialiasing_level(1);
 	framework.set_title("QPL");

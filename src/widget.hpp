@@ -130,6 +130,152 @@ struct widget {
 			this->executable_script->set_background_color(color);
 		}
 	}
+
+	void update_execute_script(const qsf::event_info& event) {
+
+		if (this->executable_script) {
+			event.update(*this->executable_script);
+			if (this->executable_script->clicked) {
+				qpl::println("clicked ! ");
+				auto lines = qpl::string_split(this->text.string(), '\n');
+
+				std::unordered_map<std::string, std::string> variables;
+
+				auto get_word_with_variables = [&](std::string word) {
+					std::string result = "";
+					qpl::size begin = qpl::size_max;
+					qpl::size end = 0u;
+					for (qpl::size i = 0u; i < word.length(); ++i) {
+						if (word[i] == '$') {
+							if (begin == qpl::size_max) {
+								result += word.substr(end, i - end);
+								begin = i + 1;
+							}
+							else {
+								auto name = word.substr(begin, i - begin);
+								if (variables.find(name) != variables.cend()) {
+									auto value = variables[name];
+									result += value;
+								}
+								end = i + 1;
+								begin = qpl::size_max;
+							}
+						}
+					}
+					result += word.substr(end, word.length() - end);
+					return result;
+				};
+
+				for (auto& line : lines) {
+					auto words = qpl::string_split(line);
+					if (!words.empty()) {
+						auto command = words[0];
+						qpl::println("checking command \"", command, "\".");
+
+						if (!command.empty()) {
+							if (qpl::string_equals_ignore_case(command, "copy")) {
+								if (words.size() == 3u) {
+
+									auto src = get_word_with_variables(words[1]);
+									auto dest = get_word_with_variables(words[2]);
+
+									qpl::println("copy ", src, "to ", dest);
+									qpl::filesys::copy_overwrite(src, dest);
+								}
+								else {
+									qpl::println("copy: invalid number of arguments.");
+								}
+							}
+							else if (qpl::string_equals_ignore_case(command, "move")) {
+								if (words.size() == 3u) {
+									auto src = get_word_with_variables(words[1]);
+									auto dest = get_word_with_variables(words[2]);
+
+									qpl::println("move ", src, "to ", dest);
+									qpl::filesys::move_overwrite(src, dest);
+								}
+								else {
+									qpl::println("move: invalid number of arguments.");
+								}
+							}
+							else if (qpl::string_equals_ignore_case(command, "remove")) {
+								if (words.size() == 2u) {
+									auto src = get_word_with_variables(words[1]);
+									qpl::println("remove ", src);
+									qpl::filesys::remove(src);
+								}
+								else {
+									qpl::println("remove: invalid number of arguments.");
+								}
+							}
+							else if (qpl::string_equals_ignore_case(command, "rename")) {
+								if (words.size() == 3u) {
+									qpl::println("rename ", words[1], " to ", words[2]);
+									qpl::filesys::rename(words[1], words[2]);
+								}
+								else {
+									qpl::println("rename: invalid number of arguments.");
+								}
+							}
+							else if (qpl::string_equals_ignore_case(command, "sync")) {
+								if (words.size() == 3u) {
+
+									auto src = get_word_with_variables(words[1]);
+									auto dest = get_word_with_variables(words[2]);
+
+									qpl::filesys::path a = src;
+									qpl::filesys::path b = dest;
+
+									auto a_time = a.last_write_time();
+									auto b_time = b.last_write_time();
+
+									if (a_time < b_time) {
+										qpl::println("sync ", dest, "to ", src);
+										qpl::filesys::copy_overwrite(dest, src);
+									}
+									else if (b_time < a_time) {
+										qpl::println("sync ", src, "to ", dest);
+										qpl::filesys::copy_overwrite(src, dest);
+									}
+									else {
+										qpl::println(src, " and ", dest, " are synchronized already.");
+									}
+								}
+								else {
+									qpl::println("sync: invalid number of arguments.");
+								}
+							}
+							else if (command[0] == '$' && qpl::count(command, '$') == 1u) {
+								auto name = command.substr(1u);
+								std::string value = "";
+								for (qpl::size i = 1u; i < words.size(); ++i) {
+									bool equals_sign = (words[i] == "=" || words[i] == ":");
+									if (!equals_sign) {
+										value = get_word_with_variables(words[i]);
+										break;
+									}
+								}
+								if (!value.empty()) {
+									variables[name] = value;
+								}
+							}
+							else {
+								qpl::print("ignored command: \"");
+								for (qpl::size i = 0u; i < words.size(); ++i) {
+									if (i) {
+										qpl::print(' ');
+									}
+									qpl::print(get_word_with_variables(words[i]));
+								}
+								qpl::println("\"");
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	void update(const qsf::event_info& event, bool other_selected) {
 		if (!other_selected) {
 			event.update(this->text);
@@ -159,10 +305,7 @@ struct widget {
 			this->move(delta);
 		}
 
-		if (this->executable_script) {
-			event.update(*this->executable_script);
-		}
-
+		this->update_execute_script(event);
 		this->first_update = false;
 	}
 	void draw(qsf::draw_object& draw) const {
