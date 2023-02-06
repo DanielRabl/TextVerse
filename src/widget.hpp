@@ -136,7 +136,6 @@ struct widget {
 		if (this->executable_script) {
 			event.update(*this->executable_script);
 			if (this->executable_script->clicked) {
-				qpl::println("clicked ! ");
 				auto lines = qpl::string_split(this->text.string(), '\n');
 
 				std::unordered_map<std::string, std::string> variables;
@@ -170,7 +169,6 @@ struct widget {
 					auto words = qpl::string_split(line);
 					if (!words.empty()) {
 						auto command = words[0];
-						qpl::println("checking command \"", command, "\".");
 
 						if (!command.empty()) {
 							if (qpl::string_equals_ignore_case(command, "copy")) {
