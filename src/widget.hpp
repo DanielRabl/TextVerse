@@ -177,7 +177,7 @@ struct widget {
 									auto src = get_word_with_variables(words[1]);
 									auto dest = get_word_with_variables(words[2]);
 
-									qpl::println("copy ", src, "to ", dest);
+									qpl::println("copy ", qpl::foreground::aqua, src, "to ", qpl::foreground::aqua, dest);
 									qpl::filesys::copy_overwrite(src, dest);
 								}
 								else {
@@ -189,7 +189,7 @@ struct widget {
 									auto src = get_word_with_variables(words[1]);
 									auto dest = get_word_with_variables(words[2]);
 
-									qpl::println("move ", src, "to ", dest);
+									qpl::println("move ", qpl::foreground::aqua, src, "to ", qpl::foreground::aqua, dest);
 									qpl::filesys::move_overwrite(src, dest);
 								}
 								else {
@@ -199,7 +199,7 @@ struct widget {
 							else if (qpl::string_equals_ignore_case(command, "remove")) {
 								if (words.size() == 2u) {
 									auto src = get_word_with_variables(words[1]);
-									qpl::println("remove ", src);
+									qpl::println("remove ", qpl::foreground::aqua, src);
 									qpl::filesys::remove(src);
 								}
 								else {
@@ -208,7 +208,7 @@ struct widget {
 							}
 							else if (qpl::string_equals_ignore_case(command, "rename")) {
 								if (words.size() == 3u) {
-									qpl::println("rename ", words[1], " to ", words[2]);
+									qpl::println("rename ", qpl::foreground::aqua, words[1], " to ", qpl::foreground::aqua, words[2]);
 									qpl::filesys::rename(words[1], words[2]);
 								}
 								else {
@@ -218,25 +218,37 @@ struct widget {
 							else if (qpl::string_equals_ignore_case(command, "sync")) {
 								if (words.size() == 3u) {
 
-									auto src = get_word_with_variables(words[1]);
-									auto dest = get_word_with_variables(words[2]);
+									qpl::filesys::path src = get_word_with_variables(words[1]);
+									qpl::filesys::path dest = get_word_with_variables(words[2]);
 
-									qpl::filesys::path a = src;
-									qpl::filesys::path b = dest;
-
-									auto a_time = a.last_write_time();
-									auto b_time = b.last_write_time();
-
-									if (a_time < b_time) {
-										qpl::println("sync ", dest, "to ", src);
+									if (!src.exists() && !dest.exists()) {
+										qpl::println("sync: both paths don't exist.");
+									}
+									else if (!src.exists()) {
+										src.create();
+										qpl::println("sync ", qpl::foreground::aqua, dest, " to ", qpl::foreground::aqua, src);
 										qpl::filesys::copy_overwrite(dest, src);
 									}
-									else if (b_time < a_time) {
-										qpl::println("sync ", src, "to ", dest);
+									else if (!dest.exists()) {
+										dest.create();
+										qpl::println("sync ", qpl::foreground::aqua, src, " to ", qpl::foreground::aqua, dest);
 										qpl::filesys::copy_overwrite(src, dest);
 									}
 									else {
-										qpl::println(src, " and ", dest, " are synchronized already.");
+										auto a_time = src.last_write_time();
+										auto b_time = dest.last_write_time();
+
+										if (a_time < b_time) {
+											qpl::println("sync ", qpl::foreground::aqua, dest, " to ", qpl::foreground::aqua, src);
+											qpl::filesys::copy_overwrite(dest, src);
+										}
+										else if (b_time < a_time) {
+											qpl::println("sync ", qpl::foreground::aqua, src, " to ", qpl::foreground::aqua, dest);
+											qpl::filesys::copy_overwrite(src, dest);
+										}
+										else {
+											qpl::println(qpl::foreground::aqua, src, " and ", qpl::foreground::aqua, dest, " are synchronized already.");
+										}
 									}
 								}
 								else {
